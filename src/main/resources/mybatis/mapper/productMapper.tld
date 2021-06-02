@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace:填写映射当前的Mapper接口，所有的增删改查的参数和返回值类型，
+		就可以直接填写缩写，不区分大小写，直接通过方法名去找类型-->
+<mapper namespace="com.magicshroom.bishe.mapper.ProductMapper">
+
+    <select id="getAll" resultType="com.magicshroom.bishe.bean.Product">
+        select * from product
+    </select>
+
+    <resultMap id="thumbnailProductMap" type="product">
+        <id property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productInfo" column="product_info"/>
+        <result property="productType" column="product_type"/>
+
+        <collection property="specificationList" ofType="specification">
+            <result property="productId" column="product_id"/>
+            <result property="specification" column="specification"/>
+            <result property="price" column="price"/>
+        </collection>
+        <collection property="thumbnailList" ofType="thumbnail">
+            <result property="productId" column="product_id"/>
+            <result property="imgPath" column="img_path"/>
+        </collection>
+     </resultMap>
+    <select id="getAllByDate" resultMap="thumbnailProductMap">
+        SELECT
+            p.product_id,
+            p.product_name,
+            p.product_info,
+            s.price,
+            t.img_path
+        FROM
+            product p
+                LEFT OUTER JOIN specification s ON ( p.product_id = s.product_id )
+                LEFT OUTER JOIN thumbnail t ON ( p.product_id = t.product_id )
+        WHERE
+                instr(
+                        product_date,#{date}) > 0
+    </select>
+    <select id="getAllByType" resultMap="thumbnailProductMap">
+        SELECT
+            p.product_id,
+            p.product_name,
+            p.product_info,
+            s.price,
+            t.img_path
+        FROM
+            product p
+                LEFT OUTER JOIN specification s ON ( p.product_id = s.product_id )
+                LEFT OUTER JOIN thumbnail t ON ( p.product_id = t.product_id )
+        WHERE
+            product_type = #{param}
+    </select>
+    <select id="getEightBySales" resultMap="thumbnailProductMap">
+        SELECT
+            p.product_id,
+            p.product_name,
+            p.product_info,
+            s.price,
+            t.img_path
+        FROM
+            product p
+                LEFT OUTER JOIN specification s ON ( p.product_id = s.product_id )
+                LEFT OUTER JOIN thumbnail t ON ( p.product_id = t.product_id )
+        WHERE
+                p.product_id IN (
+                SELECT
+                    t.product_id
+                FROM
+                        ( SELECT product_id FROM product ORDER BY product_sales LIMIT 0, 8 ) AS t)
+    </select>
+    <select id="getProductByPriority" resultMap="thumbnailProductMap">
+        SELECT
+            p.product_id,
+            p.product_name,
+            p.product_info,
+            s.price,
+            t.img_path
+        FROM
+            product p
+                LEFT OUTER JOIN specification s ON ( p.product_id = s.product_id )
+                LEFT OUTER JOIN thumbnail t ON ( p.product_id = t.product_id )
+        WHERE
+                p.product_id IN (
+                SELECT
+                    t.product_id
+                FROM
+                    ( SELECT product_id FROM product WHERE 	instr(product_name,#{s})>0  ORDER BY product_sales LIMIT 0, 6 ) AS t)
+    </select>
+    <select id="getAllByName" resultMap="thumbnailProductMap">
+        SELECT
+            p.product_id,
+            p.product_name,
+            p.product_info,
+            s.price,
+            t.img_path
+        FROM
+            product p
+                LEFT OUTER JOIN specification s ON ( p.product_id = s.product_id )
+                LEFT OUTER JOIN thumbnail t ON ( p.product_id = t.product_id )
+        WHERE
+            INSTR(product_name,#{param}) > 0
+    </select>
+
+
+    <resultMap id="completeProductMap" type="product">
+        <id property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productInfo" column="product_info"/>
+        <result property="productType" column="product_type"/>
+
+        <collection property="colorList" ofType="color">
+            <result property="productId" column="product_id"/>
+            <result property="color" column="color"/>
+        </collection>
+        <collection property="specificationList" ofType="specification">
+            <result property="productId" column="product_id"/>
+            <result property="specification" column="specification"/>
+            <result property="price" column="price"/>
+        </collection>
+        <collection property="thumbnailList" ofType="thumbnail">
+            <result property="productId" column="product_id"/>
+            <result property="imgPath" column="t_img_path"/>
+        </collection>
+        <collection property="infoImageList" ofType="infoImage">
+            <result property="productId" column="product_id"/>
+            <result property="imgPath" column="i_img_path"/>
+        </collection>
+    </resultMap>
+    <select id="getProductByProductId" resultMap="completeProductMap" >
+        SELECT
+            p.product_id,
+            p.product_name,
+            p.product_info,
+            c.color,
+            s.specification,
+            s.price,
+            t.img_path t_img_path,
+            i.img_path i_img_path
+        FROM
+            product p
+            LEFT OUTER JOIN color c ON ( p.product_id = c.product_id )
+            LEFT OUTER JOIN specification s ON ( p.product_id = s.product_id )
+            LEFT OUTER JOIN thumbnail t ON ( p.product_id = t.product_id )
+            LEFT OUTER JOIN infoimage i ON ( p.product_id = i.product_id )
+        WHERE
+            p.product_id = #{productId}
+    </select>
+
+</mapper>

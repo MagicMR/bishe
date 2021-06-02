@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magicshroom.bishe.mapper.OrderMapper">
+
+    <insert id="insertOrder">
+        INSERT INTO
+            `order`
+            ( product_id, user_id, select_color, select_specification, number, pay_trade_no, address_id )
+        VALUES
+            (#{productId},#{userId},#{selectColor},#{selectSpecification},#{number},#{payTradeNo},#{addressId})
+    </insert>
+    <select id="selectByUserId" resultType="com.magicshroom.bishe.bean.Order">
+        SELECT
+            `order`.*,
+            product.product_name as productName
+        FROM
+            `order`,
+            product
+        WHERE
+            product.product_id = `order`.product_id
+          AND user_id = #{userId}
+    </select>
+</mapper>
